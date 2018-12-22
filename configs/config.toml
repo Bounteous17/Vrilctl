@@ -1,0 +1,7 @@
+[serverApi]
+server = "127.0.0.1"
+port = 5000
+
+[tracking]
+path = "/var/log/vrilctl/"
+cli = "cli.log"
