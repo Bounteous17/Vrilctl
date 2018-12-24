@@ -8,39 +8,15 @@ import (
 	"sync"
 	"time"
 
+	Schemes "../schemes"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
-
-// ServerAPI : connect to api
-type ServerAPI struct {
-	server string
-	port   int
-}
-
-// Tracking : logging events from client actions
-type Tracking struct {
-	path string
-	cli  string
-}
-
-// Config : global config sections
-type Config struct {
-	serverAPI ServerAPI
-	tracking  Tracking
-}
 
 // Logger : create log
 type Logger struct {
 	filename string
 	*log.Logger
-}
-
-// UserSys : user info
-type UserSys struct {
-	username string
-	uid      string
-	homeDir  string
 }
 
 // Printer : info output parameters
@@ -57,29 +33,30 @@ var once sync.Once
 
 // GetLoggerInstance : create a loger instance object
 func GetLoggerInstance() *Logger {
+	Tracking := &Schemes.Config.Tracking
 	once.Do(func() {
-		logger = CreateLogger(ReadConf().tracking.path + ReadConf().tracking.cli)
+		logger = CreateLogger(Tracking.Path + Tracking.Cli)
 	})
 	return logger
 }
 
 // UserSysInfo : get user info
-func UserSysInfo() UserSys {
-	userSys := UserSys{}
+func UserSysInfo() {
 	user, err := user.Current()
 	if err != nil {
 		Colorize(Printer{Color: -1, MesgErr: err})
 		os.Exit(1)
 	}
-	userSys.uid = user.Gid
 
-	return userSys
+	Schemes.UserSys.Username = user.Username
+	Schemes.UserSys.Uid = user.Uid
+	Schemes.UserSys.HomeDir = user.HomeDir
 }
 
 // CreateLogger : instance log package
 func CreateLogger(fname string) *Logger {
 	t := time.Now()
-	pid := os.Getpid()
+	uid := os.Getuid()
 	file, err := os.OpenFile(fname, os.O_APPEND|os.O_WRONLY, 0600)
 
 	if err != nil {
@@ -89,7 +66,7 @@ func CreateLogger(fname string) *Logger {
 
 	return &Logger{
 		filename: fname,
-		Logger:   log.New(file, t.Format("2006-01-02 15:04:05 | PID:")+strconv.Itoa(pid), 0),
+		Logger:   log.New(file, t.Format("2006-01-02 15:04:05 | PID:")+strconv.Itoa(uid), 0),
 	}
 }
 
@@ -117,8 +94,7 @@ func Colorize(params Printer) {
 }
 
 // ReadConf : read config toml
-func ReadConf() Config {
-	config := Config{}
+func ReadConf() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath("configs")
 
@@ -127,11 +103,9 @@ func ReadConf() Config {
 		Colorize(Printer{Color: -1, MesgErr: err})
 		os.Exit(1)
 	} else {
-		config.serverAPI.server = viper.GetString("serverAPI.server")
-		config.serverAPI.port = viper.GetInt("serverAPI.port")
-		config.tracking.path = viper.GetString("tracking.path")
-		config.tracking.cli = viper.GetString("tracking.cli")
+		Schemes.Config.ServerAPI.Server = viper.GetString("serverAPI.server")
+		Schemes.Config.ServerAPI.Port = viper.GetInt("serverAPI.port")
+		Schemes.Config.Tracking.Path = viper.GetString("tracking.path")
+		Schemes.Config.Tracking.Cli = viper.GetString("tracking.cli")
 	}
-
-	return config
 }
