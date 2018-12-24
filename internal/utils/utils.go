@@ -1,7 +1,6 @@
-package app
+package utils
 
 import (
-	"flag"
 	"log"
 	"os"
 	"os/user"
@@ -12,12 +11,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
-
-// Verbose : verbosity params
-type Verbose struct {
-	Verbose bool
-	Level   int
-}
 
 // ServerAPI : connect to api
 type ServerAPI struct {
@@ -52,14 +45,13 @@ type UserSys struct {
 
 // Printer : info output parameters
 type Printer struct {
-	color      int
-	mesgStruct string
-	mesgData   string
-	mesgErr    error
-	log        bool
+	Color      int
+	MesgStruct string
+	MesgData   string
+	MesgErr    error
+	Log        bool
 }
 
-var verbose = Verbose{}
 var logger *Logger
 var once sync.Once
 
@@ -76,7 +68,7 @@ func UserSysInfo() UserSys {
 	userSys := UserSys{}
 	user, err := user.Current()
 	if err != nil {
-		Colorize(Printer{color: -1, mesgErr: err})
+		Colorize(Printer{Color: -1, MesgErr: err})
 		os.Exit(1)
 	}
 	userSys.uid = user.Gid
@@ -91,7 +83,7 @@ func CreateLogger(fname string) *Logger {
 	file, err := os.OpenFile(fname, os.O_APPEND|os.O_WRONLY, 0600)
 
 	if err != nil {
-		Colorize(Printer{color: -1, mesgErr: err})
+		Colorize(Printer{Color: -1, MesgErr: err})
 		os.Exit(1)
 	}
 
@@ -104,22 +96,22 @@ func CreateLogger(fname string) *Logger {
 // Colorize : manage cli logs
 func Colorize(params Printer) {
 	descStatus := "[+]"
-	switch params.color {
+	switch params.Color {
 	case -1:
-		color.Red("%s", params.mesgErr)
+		color.Red("%s", params.MesgErr)
 		descStatus = "[-]"
 	case 0:
-		color.Cyan(params.mesgStruct, params.mesgData)
+		color.Cyan(params.MesgStruct, params.MesgData)
 		descStatus = "[!]"
 	case 1:
-		color.Green(params.mesgStruct, params.mesgData)
+		color.Green(params.MesgStruct, params.MesgData)
 	}
 
-	if params.log {
-		if params.color >= 0 {
-			GetLoggerInstance().Printf(" "+descStatus+" "+params.mesgStruct+" ", params.mesgData)
+	if params.Log {
+		if params.Color >= 0 {
+			GetLoggerInstance().Printf(" "+descStatus+" "+params.MesgStruct+" ", params.MesgData)
 		} else {
-			GetLoggerInstance().Printf(" "+descStatus, " | ", params.mesgErr)
+			GetLoggerInstance().Printf(" "+descStatus, " | ", params.MesgErr)
 		}
 	}
 }
@@ -132,7 +124,7 @@ func ReadConf() Config {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		Colorize(Printer{color: -1, mesgErr: err})
+		Colorize(Printer{Color: -1, MesgErr: err})
 		os.Exit(1)
 	} else {
 		config.serverAPI.server = viper.GetString("serverAPI.server")
@@ -142,26 +134,4 @@ func ReadConf() Config {
 	}
 
 	return config
-}
-
-// AssignArgs : get cli args
-func AssignArgs() {
-	vbose := flag.Bool("v", false, "Specify username to log in api.")
-	login := flag.String("login", "", "Define user to login")
-	signup := flag.String("signup", "", "Create new user")
-	flag.Parse()
-
-	if *vbose {
-		verbose.Verbose = true
-		verbose.Level = 10
-	}
-
-	switch {
-	case *login != "":
-		Colorize(Printer{color: 1, mesgStruct: "Login user %s", mesgData: *login, log: true})
-	case *signup != "":
-		Colorize(Printer{color: 1, mesgStruct: "Signup user %s", mesgData: *signup, log: true})
-	default:
-		Colorize(Printer{color: 0, mesgStruct: "Vrilctl %s", mesgData: "v0.0.0"})
-	}
 }

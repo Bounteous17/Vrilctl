@@ -1,9 +1,9 @@
 package main
 
 import (
-	Utils "./internal/app"
+	Helpers "./internal/helpers"
 )
 
 func main() {
-	Utils.AssignArgs()
+	Helpers.AssignArgs()
 }
