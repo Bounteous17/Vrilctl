@@ -1,5 +1,9 @@
 package schemes
 
+import (
+	"net/http"
+)
+
 // UserStruct : user information auth implicated
 type UserStruct struct {
 	Username string
@@ -40,8 +44,14 @@ type UserSysStruct struct {
 	HomeDir  string
 }
 
+type ResponseStruct struct {
+	Res *http.Response
+	Err error
+}
+
 var User = &UserStruct{}
 var Verbose = &VerboseStruct{}
 var ServerApi = &ServerAPIStruct{}
 var Config = &ConfigStruct{}
 var UserSys = &UserSysStruct{}
+var Response = ResponseStruct{}
