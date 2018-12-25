@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"errors"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/user"
 	"strconv"
@@ -108,4 +111,13 @@ func ReadConf() {
 		Schemes.Config.Tracking.Path = viper.GetString("tracking.path")
 		Schemes.Config.Tracking.Cli = viper.GetString("tracking.cli")
 	}
+}
+
+func ManageResponse(res *http.Response) {
+	body, _ := ioutil.ReadAll(res.Body)
+	if res.StatusCode != 200 {
+		Colorize(Printer{Color: -1, MesgErr: errors.New(string(body))})
+		os.Exit(1)
+	}
+	Colorize(Printer{Color: 1, MesgStruct: "%s", MesgData: string(body), Log: true})
 }
