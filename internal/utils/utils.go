@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/user"
 	"strconv"
@@ -82,9 +81,11 @@ func Colorize(params Printer) {
 		descStatus = "[-]"
 	case 0:
 		color.Cyan(params.MesgStruct, params.MesgData)
-		descStatus = "[!]"
 	case 1:
 		color.Green(params.MesgStruct, params.MesgData)
+	case 2:
+		descStatus = "[!]"
+		color.Yellow("Warning: "+params.MesgStruct, params.MesgData)
 	}
 
 	if params.Log {
@@ -110,14 +111,25 @@ func ReadConf() {
 		Schemes.Config.ServerAPI.Port = viper.GetInt("serverAPI.port")
 		Schemes.Config.Tracking.Path = viper.GetString("tracking.path")
 		Schemes.Config.Tracking.Cli = viper.GetString("tracking.cli")
+		Schemes.Auth.Path = viper.GetString("auth.path")
+		Schemes.Auth.Token = viper.GetString("auth.token")
 	}
 }
 
-func ManageResponse(res *http.Response) {
-	body, _ := ioutil.ReadAll(res.Body)
-	if res.StatusCode != 200 {
+func ManageResponse(Response Schemes.ResponseStruct, body []byte) { //extraRes Schemes.ResponseStruct
+	if Response.Res.StatusCode != 200 {
 		Colorize(Printer{Color: -1, MesgErr: errors.New(string(body))})
 		os.Exit(1)
 	}
-	Colorize(Printer{Color: 1, MesgStruct: "%s", MesgData: string(body), Log: true})
+	if Response.Alert {
+		Colorize(Printer{Color: 1, MesgStruct: "%s", MesgData: string(body), Log: true})
+	}
+}
+
+func WriteFile(filepath string, raw string) {
+	err := ioutil.WriteFile(filepath, []byte(raw), 0755)
+	if err != nil {
+		Colorize(Printer{Color: -1, MesgErr: err})
+		os.Exit(1)
+	}
 }

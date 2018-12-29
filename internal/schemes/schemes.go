@@ -6,8 +6,10 @@ import (
 
 // UserStruct : user information auth implicated
 type UserStruct struct {
+	FullName string
 	Username string
 	Mail     string
+	Power    int
 	Password string
 	Token    string
 }
@@ -45,8 +47,14 @@ type UserSysStruct struct {
 }
 
 type ResponseStruct struct {
-	Res *http.Response
-	Err error
+	Res   *http.Response
+	Err   error
+	Alert bool
+}
+
+type AuthStruct struct {
+	Path  string
+	Token string
 }
 
 var User = &UserStruct{}
@@ -55,3 +63,4 @@ var ServerApi = &ServerAPIStruct{}
 var Config = &ConfigStruct{}
 var UserSys = &UserSysStruct{}
 var Response = ResponseStruct{}
+var Auth = &AuthStruct{}

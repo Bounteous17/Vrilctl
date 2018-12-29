@@ -12,6 +12,7 @@ import (
 func AssignArgs() {
 	vbose := flag.Bool("v", false, "Specify username to log in api.")
 	login := flag.String("login", "", "Define user to login")
+	password := flag.String("password", "", "Define user's password'")
 	signup := flag.String("signup", "", "Create new user")
 	flag.Parse()
 
@@ -23,6 +24,7 @@ func AssignArgs() {
 	switch {
 	case *login != "":
 		Schemes.User.Username = *login
+		Schemes.User.Password = *password
 		UsersMod.Login()
 	case *signup != "":
 		Schemes.User.Username = *signup

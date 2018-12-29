@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"io/ioutil"
 	"os"
 
 	Schemes "../../internal/schemes"
@@ -16,5 +17,11 @@ func UserLogin() {
 		Utils.Colorize(Utils.Printer{Color: -1, MesgErr: Response.Err})
 		os.Exit(1)
 	}
-	Utils.ManageResponse(Response.Res)
+	body, err := ioutil.ReadAll(Response.Res.Body)
+	if err != nil {
+		Utils.Colorize(Utils.Printer{Color: -1, MesgErr: err})
+		os.Exit(1)
+	}
+	Utils.ManageResponse(Response, body)
+	UserModule.StoreToken(string(body))
 }

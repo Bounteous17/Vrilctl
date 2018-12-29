@@ -5,3 +5,7 @@ port = 5000
 [tracking]
 path = "/var/log/vrilctl/"
 cli = "cli.log"
+
+[auth]
+path = "/tmp/vrilctl/"
+token = "token"
